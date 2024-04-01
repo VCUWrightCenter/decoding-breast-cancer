@@ -96,8 +96,12 @@ Once the Loupe file is generated, it is opened and the annotation CSV files from
 
 ### Step 08: Identifying Malignant Cells using InferCNV
 
-This step was only done once on a 30% subsampled dataset as using the entire dataset exceeded out compute resources.  
+This step was only done once on a 33% subsampled dataset as using the entire dataset exceeded out compute resources.  
 This script only processes all samples in the input file in batches of "k" at a time. The same 5 manually selected samples are also run with each batch and are used to calculate the Zscores. 
+
+Usage NOTE: The MetaData CSV for inferCNV has to have 3 columns named exactly “Sample_ID,TissueType,inferCNV.normal”. The TissueType and inferCNV.normal columns are identical except the inferCNV column has "REFERENCE" in replacement of the tissue type for those samples that are to be used as the static number of reference samples to calculate the inferCNV scroe Z-score. 
+Usage NOTE: The MetaData CSV for inferCNV has to use the EXACT name sample names that are used in step 06 for sample merging (i.e. the first column in the list CSV file).
+
 
 Step | Details
 ---  | ---
@@ -110,11 +114,11 @@ Example Usage | Rscript 08_inferCNV_id_malignent_cells.R -r UniqRunID -o /path/t
 Output Files used in downstream steps? | Yes, the CSV files were loaded into the Loupe File and used to identify clusters of cells that are normal-like.
 Output File formats and type | CSV files with scores, RDA file with inferCNV object
 
-The InferCNV scores were overlaid on the Loupe plot to identify if the normal samples correlated with low z-scores.  For our data they did, so instead of filtering on individual cells by Z-score, we removed all cells that clustered with the normal samples in the UMAP plot.  New "Cells2Keep" files were generated to identify 
+The InferCNV scores were overlaid on the Loupe plot to identify if the normal samples correlated with low z-scores. This was done by discretizing the scores to round to the closest integer and then placing everything greater than 6 in a single group ">=6".  Any non-normal cells that clustered with the normal reference groups were selected for removal to generate the Cancer-Only merge (step described below).
 
 ### Step 09: Cancer-Only Merge.
 
-Some of this was done manually by using the master merge to select the normal clusters in the UMAP plot to remove those cells.  Any non-normal cell that clustered with the normals was ALSO REMOVED from the Cancer-Only Dataset.  The chosen cancer-only barcodes were downloaded into a single file and input into the script "cells2keep_convertMerged2Unmerged_050823.R", which divided them up into new "cells2keep" csv files and saved them in the appropriate directories.  ---I NEED TO ANNOTATE THIS PROCeSS AND DESCRIBE THE SCRIPT---
+To generate the Cancer-Only datset, the 3 subsampled master merges that included all samples was utilized to select the normal clusters in the UMAP plot to remove those cells and any non-normal cells that clustered with them. The chosen cancer-only barcodes were downloaded into a single file and input into the script "cells2keep_convertMerged2Unmerged_050823.R", which divided them up into new "cells2keep" csv files and saved them in the appropriate directories.  ---I NEED TO ANNOTATE THIS PROCeSS AND DESCRIBE THE SCRIPT---
 
 Step | Details
 ---  | ---
