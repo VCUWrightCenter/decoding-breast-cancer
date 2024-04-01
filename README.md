@@ -116,7 +116,7 @@ Output File formats and type | CSV files with scores, RDA file with inferCNV obj
 
 The InferCNV scores were overlaid on the Loupe plot to identify if the normal samples correlated with low z-scores. This was done by discretizing the scores to round to the closest integer and then placing everything greater than 6 in a single group ">=6".  Any non-normal cells that clustered with the normal reference groups were selected for removal to generate the Cancer-Only merge (step described below).
 
-### Step 09: Cancer-Only Merge.
+### Step 09: Cancer-Only Merge
 
 To generate the Cancer-Only datset, the 3 subsampled master merge Loupe files that included all samples was utilized to select the clusters in the UMAP plot that were deemed to be cancer cell clusters with a high z-score (i.e. clusters with normal samples and any non-normal cells that grouped with the normal samples were not selected and therefore not included in the Cancer-Only dataset). The chosen cancer-only barcodes were downloaded and concatenated into a single CSV file and input into the script "09_cells2keep_convertMerged2Unmerged.R", which divided them up into new "cells2keep" csv files for each sample and saved them in the original results directories. 
 
@@ -127,21 +127,27 @@ Pipeline script | 09_cells2keep_convertMerged2Unmerged.R
 Input File Format | The ORIGINAL CSV file used to create the merged file from Step 06.
 Input File Format | A list of cancer cell barcodes exported from the Loupe Browser.  Must concatenate multiple barcode subsets into a SINGLE CSV file if the merge was done in groups.
 Example Usage | Rscript 09_cells2keep_convertMerged2Unmerged.R -r UniqRunID -c /path/to/step06/input.csv -o /path/to/existing/output/directory/ -k /path/to/barcode/to/keep/list.tsv
-Output Files used in downstream steps? | Yes, the CSV files are utilized byt Step 06 to create the Cancer Only Merge.
+Output Files used in downstream steps? | Yes, the CSV files are utilized by Step 06 to create the Cancer Only Merge.
 Output File formats and type | CSV files, one file for each sample included in the master merge.
 
 
-After creating the new cells2keep CSV files, the Cancer Only input CSV file needs to be generated.  For this work we copied the file used in the first round of running Step 06 and deleted the Normal sample records.  Then the "Cells2Keep" column was edited to point to the new CSV file that was created in Step 09.  Step 06 was then run again to generate the Cancer Only merge.
+After creating the new cells2keep CSV files, the Cancer Only input CSV file needs to be generated.  For this work we copied the file used in the first round of running Step 06 and deleted the Normal sample records.  Then the "Cells2Keep" column was edited to point to the new CSV file that was created in Step 09.  Step 06 was then run again to generate the Cancer Only merge, followed by Step 07 to generate the Loupe File.
 
-Step | Details
----  | ---
-Tool Name and Version | R 4.1.3
-Tool Name and Version | hdf5-1.12.2
-Pipeline script | 06_SeuratMerge.R
-Input File Format | Comma delimited, has header row (SampleName,DataType,SamplePath,Source,Condition,Sex,TumorType,Cells2Keep), has the following 8 columns (but more can be added and will be used as cell annotations): Sample ID, data type (10X or seurat), absolute path to sample’s “filtered_feature_bc_matrix” directory, sample source (e.g. PDX, MGT, etc), condition or treatment, sample sex (M or F), tumor type (e.g. HCI011, UCD52, etc), absolute path to CSV file listing barcodes of cells to keep in merge.
-Example Usage (use --help option for all parameters) | Rscript 06_SeuratMerge.R -r UniqRunID -c /path/to/input.csv -i LogNormalize -t simple --parallel -n 32 --filter
-Output Files used in downstream steps? | Yes, .h5 file is used by CellRanger Reanalyze to generate a Loupe file
-Output File formats and type | .h5 file, RData file contining the merged Seurat object, multiple .CSV annotation files (one for each column in the input CSV file)
+**Reference Step 06 and Step 07**
+
+### Step 10: ER and TN Specific Merges
+
+Two subsets of the Cancer Only dataset were created consisting of ER+ and TNBC samples only.  The CSV inventory file utilized by Step 09 to create the cancer only merge was copied twice and all sample records subset to either the ER+ samples or TNBC samples.  These were then utilized to create new merged datasets by running Step 06 and 07 again using these new library files.
+
+**Reference Step 06 and Step 07**
+
+### Step 11: Pseudo PAM50 Subtyping
+
+### Step 12: SCSubtype Subtyping
+
+### Step 13: TNBCType Subtyping
+
+
 
 
 
